@@ -1,0 +1,2 @@
+# inamifuyugeshiki-omikuji
+冬景色で使用するQRコードのWebおみくじ
