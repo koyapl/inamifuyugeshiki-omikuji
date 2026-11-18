@@ -119,7 +119,7 @@
   /* ヘッダーバッジ */
   .festival-header {
     text-align: center;
-    margin-bottom: 16px;
+    margin-bottom: 18px;
     color: #fff;
   }
 
@@ -138,29 +138,115 @@
   }
 
   .festival-title {
-    font-size: 1.45rem;
+    font-size: 1.48rem;
     font-weight: 900;
     letter-spacing: 0.04em;
     text-shadow: 0 2px 12px rgba(255, 215, 0, 0.55), 0 0 24px rgba(138, 43, 226, 0.8);
   }
 
-  /* おみくじ結果カード */
+  /* 共通ポップカード */
   .omikuji-card {
     background: var(--card-bg);
     border-radius: 28px;
-    padding: 24px 20px 26px;
+    padding: 26px 20px 28px;
     box-shadow: 0 16px 40px rgba(8, 6, 36, 0.65),
                 0 0 0 3px rgba(255, 215, 0, 0.65),
                 0 0 28px rgba(255, 215, 0, 0.35);
     position: relative;
     overflow: hidden;
-    animation: popAppear 0.55s cubic-bezier(0.22, 1.25, 0.36, 1) both;
+  }
+
+  .hidden {
+    display: none !important;
+  }
+
+  /* QR読み込み直後の初期画面（「結果をみる」ボタン画面） */
+  .intro-card {
+    text-align: center;
+    padding: 32px 20px 34px;
+    animation: popAppear 0.45s cubic-bezier(0.22, 1.25, 0.36, 1) both;
+  }
+
+  .intro-meta {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+
+  .intro-icon-wrap {
+    width: 96px;
+    height: 96px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #fff7c2, #ffd54f 65%, #f59e0b 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.9rem;
+    box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4), 0 0 0 5px rgba(255, 215, 0, 0.25);
+    animation: floatIcon 3s ease-in-out infinite;
+  }
+
+  @keyframes floatIcon {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-6px); }
+  }
+
+  .intro-heading {
+    font-size: 1.25rem;
+    font-weight: 900;
+    color: #231942;
+    margin-bottom: 8px;
+  }
+
+  .intro-sub {
+    font-size: 0.9rem;
+    color: #52467a;
+    font-weight: 700;
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+
+  .reveal-btn {
+    width: 100%;
+    max-width: 300px;
+    padding: 16px 24px;
+    border: none;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #ff6ec7 0%, #a855f7 50%, #3b82f6 100%);
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 1.22rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    box-shadow: 0 10px 24px rgba(168, 85, 247, 0.45),
+                0 0 0 3px rgba(255, 215, 0, 0.75);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    position: relative;
+  }
+
+  .reveal-btn:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 14px 28px rgba(168, 85, 247, 0.55),
+                0 0 0 4px rgba(255, 215, 0, 0.9);
+  }
+
+  .reveal-btn:active {
+    transform: scale(0.97);
+  }
+
+  /* 結果表示アニメーション */
+  .result-appear {
+    animation: popAppear 0.42s cubic-bezier(0.22, 1.25, 0.36, 1) both;
   }
 
   @keyframes popAppear {
     0% {
       opacity: 0;
-      transform: scale(0.88) translateY(16px);
+      transform: scale(0.9) translateY(12px);
     }
     100% {
       opacity: 1;
@@ -488,8 +574,20 @@
       <h1 class="festival-title">きらめき冬祭り おみくじ</h1>
     </header>
 
-    <!-- QR読み込み直後に即座に表示される結果カード -->
-    <main class="omikuji-card" id="resultCard">
+    <!-- ① QR読み込み直後に表示される「結果をみる」ボタン画面 -->
+    <section class="omikuji-card intro-card" id="introScreen">
+      <div class="intro-meta">
+        <span class="type-pill" id="introTypeBadge">📚 学問成就</span>
+        <span class="qr-id-badge" id="introQrLabel">QR No.01 / 30</span>
+      </div>
+      <div class="intro-icon-wrap" id="introIcon">🔮</div>
+      <h2 class="intro-heading">おみくじが届きました！</h2>
+      <p class="intro-sub">イルミネーションの光をこめて…<br>下のボタンを押して結果を見てみよう！</p>
+      <button type="button" class="reveal-btn" id="revealBtn">結果をみる</button>
+    </section>
+
+    <!-- ② 「結果をみる」ボタンを押した瞬間に表示される結果カード -->
+    <main class="omikuji-card hidden" id="resultCard">
       <div class="card-meta">
         <span class="type-pill" id="typeBadge">📚 学問成就</span>
         <span class="qr-id-badge" id="qrCodeLabel">QR No.01 / 30</span>
@@ -537,7 +635,7 @@
 
     <section class="qr-directory" id="qrDirectory">
       <p class="dir-desc">
-        GitHub Pagesで公開後、現在のページURLの末尾に <code>?id=1</code> 〜 <code>?id=30</code> を付けた30個のURLをQRコード化してください。読み込んだ瞬間に該当番号の固定結果が表示されます。
+        GitHub Pagesで公開後、現在のページURLの末尾に <code>?id=1</code> 〜 <code>?id=30</code> を付けた30個のURLをQRコード化してください。読み込んだ瞬間に「結果をみる」ボタンが表示され、押すと該当番号の固定結果が瞬時に表示されます。
       </p>
       <div class="copy-urls-box">
         <button class="copy-btn" id="copyAllUrlsBtn" type="button">📎 現在の公開URLから全30枚分のQR用URLを一括コピー</button>
@@ -994,6 +1092,12 @@ const OMIKUJI_DATA = [
   }
 ];
 
+const TYPE_ICONS = {
+  study: "📚",
+  love: "💖",
+  victory: "🏆"
+};
+
 /**
  * イルミネーション背景生成（青・紫・金）
  */
@@ -1001,7 +1105,6 @@ function initIllumination() {
   const layer = document.getElementById("illuminationLayer");
   const garland = document.getElementById("garland");
 
-  // 上部ガーランド電球
   const bulbCount = Math.max(12, Math.floor(window.innerWidth / 34));
   for (let i = 0; i < bulbCount; i++) {
     const bulb = document.createElement("div");
@@ -1009,7 +1112,6 @@ function initIllumination() {
     garland.appendChild(bulb);
   }
 
-  // 青・紫・金のボケ光パーティクル
   const palette = [
     { bg: "radial-gradient(circle, #ffd700 0%, rgba(255,215,0,0) 70%)", shadow: "0 0 18px #ffd700" },
     { bg: "radial-gradient(circle, #fff099 0%, rgba(255,240,153,0) 70%)", shadow: "0 0 14px #ffe066" },
@@ -1039,7 +1141,7 @@ function initIllumination() {
 }
 
 /**
- * URLパラメータからQR固定ID（1〜30）を取得して即座に表示
+ * URLパラメータからQR固定ID（1〜30）を取得
  */
 function getFixedIdFromUrl() {
   const params = new URLSearchParams(window.location.search);
@@ -1056,35 +1158,52 @@ function getFixedIdFromUrl() {
   return 1;
 }
 
-function renderOmikuji(id) {
+/**
+ * 初期画面（ボタン表示）と結果データの事前セット
+ */
+function setupOmikuji(id) {
   const item = OMIKUJI_DATA.find(d => d.id === id) || OMIKUJI_DATA[0];
   const rankInfo = RANKS[item.rank];
+  const qrText = `QR No.${String(item.id).padStart(2, "0")} / 30`;
 
-  // 種類バッジ
+  // 初期画面（「結果をみる」ボタン画面）の表示セット
+  const introTypeBadge = document.getElementById("introTypeBadge");
+  introTypeBadge.textContent = item.typeLabel;
+  introTypeBadge.className = "type-pill type-" + item.type;
+  document.getElementById("introQrLabel").textContent = qrText;
+  document.getElementById("introIcon").textContent = TYPE_ICONS[item.type] || "🔮";
+
+  // 結果カードの中身を事前に構築（ボタンを押した瞬間に遅延ゼロで表示するため）
   const typeBadge = document.getElementById("typeBadge");
   typeBadge.textContent = item.typeLabel;
   typeBadge.className = "type-pill type-" + item.type;
+  document.getElementById("qrCodeLabel").textContent = qrText;
 
-  // QR番号バッジ
-  document.getElementById("qrCodeLabel").textContent = `QR No.${String(item.id).padStart(2, "0")} / 30`;
-
-  // 5段階ランクボックス
   const rankBox = document.getElementById("rankBox");
   rankBox.className = "rank-box " + rankInfo.className;
   document.getElementById("rankStars").textContent = rankInfo.stars;
   document.getElementById("rankName").textContent = rankInfo.name;
   document.getElementById("rankCatch").textContent = item.catchphrase;
 
-  // 詳しい説明文・項目
   document.getElementById("detailText").textContent = item.detail;
   document.getElementById("sub1Title").textContent = item.sub1Title;
   document.getElementById("sub1Val").textContent = item.sub1Val;
   document.getElementById("sub2Title").textContent = item.sub2Title;
   document.getElementById("sub2Val").textContent = item.sub2Val;
 
-  // ラッキーアイテム・カラー
   document.getElementById("luckyItem").textContent = item.luckyItem;
   document.getElementById("luckyColor").textContent = item.luckyColor;
+
+  // 「結果をみる」ボタン押下で瞬時に結果を表示
+  const introScreen = document.getElementById("introScreen");
+  const resultCard = document.getElementById("resultCard");
+  const revealBtn = document.getElementById("revealBtn");
+
+  revealBtn.addEventListener("click", () => {
+    introScreen.classList.add("hidden");
+    resultCard.classList.remove("hidden");
+    resultCard.classList.add("result-appear");
+  });
 }
 
 /**
@@ -1145,11 +1264,10 @@ function buildDirectory(currentId) {
   });
 }
 
-// 読み込み即実行（待ち時間・ボタン操作なしで即結果表示）
 document.addEventListener("DOMContentLoaded", () => {
   initIllumination();
   const currentId = getFixedIdFromUrl();
-  renderOmikuji(currentId);
+  setupOmikuji(currentId);
   buildDirectory(currentId);
 });
 </script>
