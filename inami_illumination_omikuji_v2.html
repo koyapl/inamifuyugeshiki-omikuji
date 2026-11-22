@@ -1,0 +1,1485 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>いなみ冬景色 イルミネーションおみくじ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #ffd700;
+    --card-bg: rgba(255, 255, 255, 0.95);
+    --text-main: #231942;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: 'Zen Maru Gothic', 'M PLUS Rounded 1c', sans-serif;
+    min-height: 100vh;
+    background: radial-gradient(circle at 20% 20%, #243b82 0%, transparent 45%),
+                radial-gradient(circle at 80% 30%, #4b1d78 0%, transparent 50%),
+                radial-gradient(circle at 50% 85%, #3d2c1e 0%, transparent 55%),
+                linear-gradient(160deg, #070b24 0%, #191347 45%, #2d1457 80%, #110c2e 100%);
+    color: var(--text-main);
+    overflow-x: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 16px 48px;
+  }
+
+  /* イルミネーション背景演出 */
+  .illumination-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  .bokeh {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(2px);
+    opacity: 0;
+    animation: slowTwinkle var(--dur, 6s) ease-in-out infinite;
+    animation-delay: var(--delay, 0s);
+  }
+
+  @keyframes slowTwinkle {
+    0%, 100% {
+      opacity: 0.12;
+      transform: scale(0.85) translateY(0px);
+    }
+    50% {
+      opacity: var(--max-op, 0.85);
+      transform: scale(1.15) translateY(-10px);
+    }
+  }
+
+  /* 上部のイルミネーションガーランド */
+  .garland {
+    position: fixed;
+    top: -6px;
+    left: 0;
+    width: 100%;
+    height: 36px;
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-start;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .bulb {
+    width: 14px;
+    height: 18px;
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    animation: bulbGlow 4.5s ease-in-out infinite alternate;
+  }
+
+  .bulb:nth-child(3n+1) {
+    background: #ffd700;
+    box-shadow: 0 0 12px #ffd700, 0 0 24px #ffae00;
+    animation-delay: 0s;
+  }
+  .bulb:nth-child(3n+2) {
+    background: #66d9ff;
+    box-shadow: 0 0 12px #66d9ff, 0 0 24px #2980ff;
+    animation-delay: 1.5s;
+  }
+  .bulb:nth-child(3n) {
+    background: #d580ff;
+    box-shadow: 0 0 12px #d580ff, 0 0 24px #9933ff;
+    animation-delay: 3s;
+  }
+
+  @keyframes bulbGlow {
+    0% { opacity: 0.35; transform: scale(0.92); }
+    100% { opacity: 1; transform: scale(1.08); }
+  }
+
+  /* メインコンテナ */
+  .container {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 480px;
+    margin-top: 18px;
+  }
+
+  /* ヘッダーバッジ */
+  .festival-header {
+    text-align: center;
+    margin-bottom: 18px;
+    color: #fff;
+  }
+
+  .festival-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.25), rgba(168, 85, 247, 0.35));
+    border: 1.5px solid rgba(255, 215, 0, 0.7);
+    color: #fff6b3;
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 4px 14px;
+    border-radius: 999px;
+    letter-spacing: 0.08em;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+    margin-bottom: 6px;
+  }
+
+  .festival-title {
+    font-size: 1.48rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    text-shadow: 0 2px 12px rgba(255, 215, 0, 0.55), 0 0 24px rgba(138, 43, 226, 0.8);
+  }
+
+  /* 共通ポップカード */
+  .omikuji-card {
+    background: var(--card-bg);
+    border-radius: 28px;
+    padding: 26px 20px 28px;
+    box-shadow: 0 16px 40px rgba(8, 6, 36, 0.65),
+                0 0 0 3px rgba(255, 215, 0, 0.65),
+                0 0 28px rgba(255, 215, 0, 0.35);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hidden {
+    display: none !important;
+  }
+
+  /* QR読み込み直後の初期画面（「結果をみる」ボタン画面） */
+  .intro-card {
+    text-align: center;
+    padding: 32px 20px 34px;
+    animation: popAppear 0.45s cubic-bezier(0.22, 1.25, 0.36, 1) both;
+  }
+
+  .intro-meta {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+
+  .intro-icon-wrap {
+    width: 96px;
+    height: 96px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #fff7c2, #ffd54f 65%, #f59e0b 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.9rem;
+    box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4), 0 0 0 5px rgba(255, 215, 0, 0.25);
+    animation: floatIcon 3s ease-in-out infinite;
+  }
+
+  @keyframes floatIcon {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-6px); }
+  }
+
+  .intro-heading {
+    font-size: 1.25rem;
+    font-weight: 900;
+    color: #231942;
+    margin-bottom: 8px;
+  }
+
+  .intro-sub {
+    font-size: 0.9rem;
+    color: #52467a;
+    font-weight: 700;
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+
+  .reveal-btn {
+    width: 100%;
+    max-width: 300px;
+    padding: 16px 24px;
+    border: none;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #ff6ec7 0%, #a855f7 50%, #3b82f6 100%);
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 1.22rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    box-shadow: 0 10px 24px rgba(168, 85, 247, 0.45),
+                0 0 0 3px rgba(255, 215, 0, 0.75);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    position: relative;
+  }
+
+  .reveal-btn:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 14px 28px rgba(168, 85, 247, 0.55),
+                0 0 0 4px rgba(255, 215, 0, 0.9);
+  }
+
+  .reveal-btn:active {
+    transform: scale(0.97);
+  }
+
+  /* 結果表示アニメーション */
+  .result-appear {
+    animation: popAppear 0.42s cubic-bezier(0.22, 1.25, 0.36, 1) both;
+  }
+
+  @keyframes popAppear {
+    0% {
+      opacity: 0;
+      transform: scale(0.9) translateY(12px);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  /* カード上部メタ情報（種類 & QR番号） */
+  .card-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    gap: 8px;
+  }
+
+  .type-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.88rem;
+    font-weight: 800;
+    padding: 5px 14px;
+    border-radius: 999px;
+    color: #fff;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.14);
+  }
+
+  .type-study {
+    background: linear-gradient(135deg, #2563eb, #4f46e5);
+  }
+  .type-love {
+    background: linear-gradient(135deg, #ec4899, #db2777);
+  }
+  .type-victory {
+    background: linear-gradient(135deg, #f59e0b, #ea580c);
+  }
+
+  .qr-id-badge {
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: #5b4b8a;
+    background: #f1ecff;
+    border: 1.5px solid #d8ccff;
+    padding: 4px 10px;
+    border-radius: 999px;
+  }
+
+  /* 運勢ランク表示エリア（5種類：大吉・中吉・小吉・末吉・凶） */
+  .rank-box {
+    text-align: center;
+    padding: 18px 12px 20px;
+    border-radius: 22px;
+    margin-bottom: 18px;
+    position: relative;
+    border: 2px dashed rgba(255, 255, 255, 0.75);
+  }
+
+  .rank-daikichi {
+    background: linear-gradient(135deg, #fff5b8 0%, #ffd54f 50%, #ffecb3 100%);
+    box-shadow: 0 6px 20px rgba(255, 193, 7, 0.38);
+    color: #7c2d12;
+  }
+  .rank-chukichi {
+    background: linear-gradient(135deg, #fce7f3 0%, #f9a8d4 100%);
+    box-shadow: 0 6px 20px rgba(236, 72, 153, 0.25);
+    color: #831843;
+  }
+  .rank-shokichi {
+    background: linear-gradient(135deg, #e0f2fe 0%, #93c5fd 100%);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.25);
+    color: #1e3a8a;
+  }
+  .rank-suekichi {
+    background: linear-gradient(135deg, #d1fae5 0%, #6ee7b7 100%);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.25);
+    color: #064e3b;
+  }
+  .rank-kyo {
+    background: linear-gradient(135deg, #ede9fe 0%, #c4b5fd 100%);
+    box-shadow: 0 6px 20px rgba(124, 58, 237, 0.28);
+    color: #3b0764;
+  }
+
+  .rank-stars {
+    font-size: 1.05rem;
+    letter-spacing: 0.14em;
+    margin-bottom: 2px;
+  }
+
+  .rank-name {
+    font-size: 2.85rem;
+    font-weight: 900;
+    line-height: 1.15;
+    letter-spacing: 0.12em;
+    text-shadow: 0 2px 0 rgba(255, 255, 255, 0.8);
+  }
+
+  .rank-catch {
+    margin-top: 6px;
+    font-size: 0.92rem;
+    font-weight: 800;
+    opacity: 0.92;
+  }
+
+  /* 詳しい説明文セクション */
+  .detail-section {
+    background: #f8f7ff;
+    border-radius: 18px;
+    padding: 16px;
+    margin-bottom: 14px;
+    border: 1.5px solid #e6e1ff;
+  }
+
+  .section-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.84rem;
+    font-weight: 800;
+    color: #4c1d95;
+    margin-bottom: 8px;
+  }
+
+  .detail-text {
+    font-size: 0.95rem;
+    line-height: 1.75;
+    color: var(--text-main);
+    font-weight: 500;
+  }
+
+  /* 項目別アドバイスグリッド */
+  .advice-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .advice-item {
+    background: #ffffff;
+    border: 1.5px solid #ece8ff;
+    border-radius: 16px;
+    padding: 11px 12px;
+    box-shadow: 0 3px 8px rgba(35, 25, 66, 0.04);
+  }
+
+  .advice-title {
+    font-size: 0.76rem;
+    font-weight: 800;
+    color: #6d28d9;
+    margin-bottom: 3px;
+  }
+
+  .advice-value {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #1f1638;
+    line-height: 1.4;
+  }
+
+  /* ラッキーアイテム＆カラーバー */
+  .lucky-bar {
+    background: linear-gradient(135deg, #241752, #3b1c71);
+    color: #fff;
+    border-radius: 16px;
+    padding: 12px 14px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    gap: 10px;
+    text-align: center;
+    box-shadow: 0 6px 16px rgba(36, 23, 82, 0.25);
+  }
+
+  .lucky-col {
+    flex: 1;
+  }
+
+  .lucky-divider {
+    width: 1px;
+    height: 28px;
+    background: rgba(255, 255, 255, 0.25);
+  }
+
+  .lucky-label {
+    font-size: 0.72rem;
+    color: #ffd700;
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+
+  .lucky-val {
+    font-size: 0.9rem;
+    font-weight: 800;
+  }
+
+  /* 運営用QR一覧・URL生成パネル */
+  .directory-toggle {
+    margin-top: 20px;
+    text-align: center;
+  }
+
+  .toggle-btn {
+    background: rgba(255, 255, 255, 0.14);
+    backdrop-filter: blur(6px);
+    color: #fff6cc;
+    border: 1.5px solid rgba(255, 215, 0, 0.45);
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .toggle-btn:hover {
+    background: rgba(255, 215, 0, 0.25);
+  }
+
+  .qr-directory {
+    margin-top: 14px;
+    background: rgba(18, 14, 48, 0.92);
+    backdrop-filter: blur(10px);
+    border: 1.5px solid rgba(255, 215, 0, 0.45);
+    border-radius: 22px;
+    padding: 18px 16px;
+    color: #fff;
+    display: none;
+  }
+
+  .qr-directory.open {
+    display: block;
+  }
+
+  .dir-desc {
+    font-size: 0.82rem;
+    color: #d8d4f2;
+    line-height: 1.6;
+    margin-bottom: 12px;
+  }
+
+  .copy-urls-box {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 215, 0, 0.35);
+    border-radius: 14px;
+    padding: 12px;
+    margin-bottom: 14px;
+  }
+
+  .copy-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #ffd700, #f59e0b);
+    color: #231942;
+    border: none;
+    border-radius: 999px;
+    padding: 9px 14px;
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+  }
+
+  .copy-status {
+    font-size: 0.76rem;
+    color: #a7f3d0;
+    text-align: center;
+    margin-top: 6px;
+    min-height: 1.1em;
+  }
+
+  .dir-group-title {
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: #ffd700;
+    margin: 12px 0 8px;
+  }
+
+  .dir-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 7px;
+  }
+
+  .dir-link {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: #fff;
+    text-decoration: none;
+    padding: 7px 10px;
+    border-radius: 12px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    transition: background 0.2s;
+  }
+
+  .dir-link:hover, .dir-link.active {
+    background: rgba(255, 215, 0, 0.28);
+    border-color: #ffd700;
+  }
+
+  .dir-rank-tag {
+    background: rgba(0, 0, 0, 0.35);
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    color: #ffe875;
+  }
+</style>
+</head>
+<body>
+
+  <!-- ゆっくり輝くイルミネーション背景 -->
+  <div class="illumination-layer" id="illuminationLayer"></div>
+  <div class="garland" id="garland"></div>
+
+  <div class="container">
+    <header class="festival-header">
+      <div class="festival-badge">✨ WINTER ILLUMINATION FESTIVAL ✨</div>
+      <h1 class="festival-title">いなみ冬景色 おみくじ</h1>
+    </header>
+
+    <!-- ① QR読み込み直後に表示される「結果をみる」ボタン画面 -->
+    <section class="omikuji-card intro-card" id="introScreen">
+      <div class="intro-meta">
+        <span class="type-pill" id="introTypeBadge">📚 学問成就</span>
+        <span class="qr-id-badge" id="introQrLabel">QR No.01 / 45</span>
+      </div>
+      <div class="intro-icon-wrap" id="introIcon">🔮</div>
+      <h2 class="intro-heading">おみくじが届きました！</h2>
+      <p class="intro-sub">イルミネーションの光をこめて…<br>下のボタンを押しておみくじの結果を見てみよう！</p>
+      <button type="button" class="reveal-btn" id="revealBtn">結果をみる</button>
+    </section>
+
+    <!-- ② 「結果をみる」ボタンを押した瞬間に表示される結果カード -->
+    <main class="omikuji-card hidden" id="resultCard">
+      <div class="card-meta">
+        <span class="type-pill" id="typeBadge">📚 学問成就</span>
+        <span class="qr-id-badge" id="qrCodeLabel">QR No.01 / 45</span>
+      </div>
+
+      <div class="rank-box" id="rankBox">
+        <div class="rank-stars" id="rankStars">★★★★★</div>
+        <div class="rank-name" id="rankName">大吉</div>
+        <div class="rank-catch" id="rankCatch"></div>
+      </div>
+
+      <div class="detail-section">
+        <div class="section-label">📜 あなたの運勢メッセージ</div>
+        <p class="detail-text" id="detailText"></p>
+      </div>
+
+      <div class="advice-grid">
+        <div class="advice-item">
+          <div class="advice-title" id="sub1Title">✨ ポイント①</div>
+          <div class="advice-value" id="sub1Val"></div>
+        </div>
+        <div class="advice-item">
+          <div class="advice-title" id="sub2Title">🎁 ポイント②</div>
+          <div class="advice-value" id="sub2Val"></div>
+        </div>
+      </div>
+
+      <div class="lucky-bar">
+        <div class="lucky-col">
+          <div class="lucky-label">🎀 ラッキーアイテム</div>
+          <div class="lucky-val" id="luckyItem"></div>
+        </div>
+        <div class="lucky-divider"></div>
+        <div class="lucky-col">
+          <div class="lucky-label">🎨 ラッキーカラー</div>
+          <div class="lucky-val" id="luckyColor"></div>
+        </div>
+      </div>
+    </main>
+
+    <!-- 運営・GitHub公開用：全45種のQRリンク確認＆URL一括コピーパネル -->
+    <div class="directory-toggle">
+      <button class="toggle-btn" id="toggleDirBtn" type="button">📋 運営・GitHub公開用：全45枚のQR結果＆URL一覧</button>
+    </div>
+
+    <section class="qr-directory" id="qrDirectory">
+      <p class="dir-desc">
+        GitHub Pagesで公開後、現在のページURLの末尾に <code>?id=1</code> 〜 <code>?id=45</code> を付けた45個のURLをQRコード化してください。読み込んだ瞬間に「結果をみる」ボタンが表示され、押すと該当番号の固定結果が瞬時に表示されます。
+      </p>
+      <div class="copy-urls-box">
+        <button class="copy-btn" id="copyAllUrlsBtn" type="button">📎 現在の公開URLから全45枚分のQR用URLを一括コピー</button>
+        <div class="copy-status" id="copyStatus"></div>
+      </div>
+      <div id="dirListContainer"></div>
+    </section>
+  </div>
+
+<script>
+/**
+ * 5種類の結果定義（大吉・中吉・小吉・末吉・凶）
+ */
+const RANKS = {
+  daikichi: { name: "大吉", stars: "★★★★★", className: "rank-daikichi" },
+  chukichi: { name: "中吉", stars: "★★★★☆", className: "rank-chukichi" },
+  shokichi: { name: "小吉", stars: "★★★☆☆", className: "rank-shokichi" },
+  suekichi: { name: "末吉", stars: "★★☆☆☆", className: "rank-suekichi" },
+  kyo:      { name: "凶",   stars: "★☆☆☆☆", className: "rank-kyo" }
+};
+
+/**
+ * 3種類 × 各15枚 ＝ 全45枚の固定おみくじデータ
+ * 各種類の内訳：大吉=6枚、中吉=4枚、小吉=2枚、末吉=1枚、凶=2枚
+ * 1〜15  : 学問成就（study）
+ * 16〜30 : 恋愛成就（love）
+ * 31〜45 : 勝利祈願（victory）
+ */
+const OMIKUJI_DATA = [
+  // ================= 1〜15：学問成就（大吉6・中吉4・小吉2・末吉1・凶2） =================
+  {
+    id: 1,
+    type: "study",
+    typeLabel: "📚 学問成就",
+    rank: "daikichi",
+    catchphrase: "ひらめき爆発！努力が満点の輝きを放つ大幸運！",
+    detail: "冬の夜空を彩るイルミネーションのように、あなたの頭脳と集中力が最高潮に冴えわたっています。これまで積み重ねてきた勉強や知識がパズルのピースのようにピタリとつながり、難問もスラスラ解ける絶好調の運気です。志望校や資格試験など、高い目標ほど大きく花開きます。",
+    sub1Title: "📖 勉強・試験",
+    sub1Val: "直感も論理も冴えわたり、実力以上の成果が出せます！",
+    sub2Title: "💡 おすすめ行動",
+    sub2Val: "得意科目をさらに伸ばすと全体の勢いが加速します。",
+    luckyItem: "金色の星型クリップ",
+    luckyColor: "ロイヤルゴールド"
+  },
+  {
+    id: 2,
+    type: "study",
+    typeLabel: "📚 学問成就",
+    rank: "daikichi",
+    catchphrase: "記憶力も集中力も絶好調！合格・達成の黄金ルート！",
+    detail: "一度覚えたことがしっかり定着し、短時間でも驚くほどの学習効率を発揮できる大吉運です。先生や先輩、友達からの何気ないアドバイスの中に、試験や課題突破の決定的なヒントが隠れています。自信を持って机に向かい、目標達成の喜びを掴み取りましょう。",
+    sub1Title: "📖 勉強・試験",
+    sub1Val: "朝一番の復習が驚くほどの記憶定着につながります。",
+    sub2Title: "💡 おすすめ行動",
+    sub2Val: "友達に勉強を教えてあげると自分の理解も完璧に！",
+    luckyItem: "お気に入りのシャープペン",
+    luckyColor: "スターライトブルー"
+  },
+  {
+    id: 3,
+    type: "study",
+    typeLabel: "📚 学問成就",
+    rank: "daikichi",
+    catchphrase: "苦手克服の大チャンス！新しい学びが未来を開く！",
+    detail: "「難しいな」と感じていた単元や新しい分野も、今のあなたならゲームを攻略するように楽しくマスターできます。知的好奇心がそのまま成績アップやスキル習得に直結する素晴らしい時期です。興味が湧いたことは迷わず調べて自分の武器にしてしまいましょう。",
+    sub1Title: "📖 勉強・試験",
+    sub1Val: "過去問や演習問題にチャレンジすると手応え抜群！",
+    sub2Title: "💡 おすすめ行動",
+    sub2Val: "目標を紙に書いてデスクに貼ると実現力が倍増します。",
+    luckyItem: "新しいノート",
+    luckyColor: "オーロラパープル"
+  },
+  {
+    id: 4,
+    type: "study",
+    typeLabel: "📚 学問成就",
+    rank: "daikichi",
+    catchphrase: "理解スピードが急上昇！難問突破のブレイクスルー運！",
+    detail: "今までモヤモヤしていた公式や文法が、ある瞬間スッと腑に落ちる劇的なひらめきに恵まれます。頭の中がクリアになり、応用問題にも柔軟に対応できる頼もしい運気です。テストや発表でも堂々と実力を出し切り、周囲をアッと驚かせることができます。",
+    sub1Title: "📖 勉強・試験",
+    sub1Val: "応用問題・記述問題で高得点を狙える絶好のタイミング！",
+    sub2Title: "💡 おすすめ行動",
+    sub2Val: "要点を3行にまとめて声に出すと記憶が盤石になります。",
+    luckyItem: "星柄のブックカバー",
+    luckyColor: "サファイアブルー"
+  },
+  {
+    id: 5,
+    type: "study",
+    typeLabel: "📚 学問成就",
+    rank: "daikichi",
+    catchphrase: "努力が最高の形で実を結ぶ！栄光のサクラサク大吉運！",
+    detail: "あなたがこれまで人知れず積み重ねてきた努力に、大きなスポットライトが当たるときです。模試や小テスト、コンクールなどで自己ベストを更新するチャンス到来！迷わず自分の力を信じて突き進むことで、理想以上の未来への扉が大きく開かれます。",
+    sub1Title: "📖 勉強・試験",
+    sub1Val: "本番に強く、最後の1分まで粘り抜いて逆転合格も！",
+    sub2Title: "💡 おすすめ行動",
+    sub2Val: "お気に入りのBGMを聴いてテンションを上げてから開始を。",
+    luckyItem: "ゴールドのしおり",
+    luckyColor: "サンライズゴールド"
+  },
+  {
+    id: 6,
+    type: "study",
+    typeLabel: "📚 学問成就",
+    rank: "daikichi",
+    catchphrase: "創造力も発想力も満点！プレゼン・レポートで高評価！",
+    detail: "暗記や計算だけでなく、作文・レポート・自由研究・実技など、あなたの個性やアイデアが光る分野で抜群の成果が出せる大吉です。自分ならではの視点でまとめた発表や作品が先生や仲間から絶賛され、大きな自信につながります。",
+    sub1Title: "📖 勉強・試験",
+    sub1Val: "独自のアイデアや丁寧な表現が高い評価を呼びます。",
+    sub2Title: "💡 おすすめ行動",
+    sub2Val: "気になったニュースや本をメモしておくと大きな武器に。",
+    luckyItem: "カラーペンセット",
+    luckyColor: "エメラルドグリーン"
+  },
+  {
+    id: 7,
+    type: "study",
+    typeLabel: "📚 学問成就",
+    rank: "chukichi",
+    catchphrase: "コツコツの積み重ねが着実に実力へ変わる好調運！",
+    detail: "派手な裏技よりも、毎日の予習・復習を丁寧に続けることでグングン力が伸びていく好調期です。昨日解けなかった問題が今日解けるようになるなど、自分の成長をしっかり実感できます。25分集中して5分休むリズムを取り入れるとさらに捗ります。",
+    sub1Title: "📖 勉強・試験",
+    sub1Val: "基礎問題の反復練習が本番での大きな安心感に。",
+    sub2Title: "💡 おすすめ行動",
+    sub2Val: "図書館や自習室など静かな環境で取り組むと吉。",
+    luckyItem: "カラフルな付箋",
+    luckyColor: "スカイブルー"
+  },
+  {
+    id: 8,
+    type: "study",
+    typeLabel: "📚 学問成就",
+    rank: "chukichi",
+    catchphrase: "良い仲間に恵まれ、刺激を受けながら伸びる上昇運！",
+    detail: "一緒に頑張るライバルや仲間の存在が、あなたのやる気スイッチを力強く押してくれます。1人で悩むよりも、分からないところは素直に質問したり教え合ったりすることで理解が一気に深まります。休憩時間の温かい飲み物が集中力を回復させてくれます。",
+    sub1Title: "📖 勉強・試験",
+    sub1Val: "苦手分野の克服に光が見える嬉しいタイミング。",
+    sub2Title: "💡 おすすめ行動",
+    sub2Val: "学習スケジュールを1週間単位で立ててみよう。",
+    luckyItem: "温かいココア",
+    luckyColor: "シャンパンゴールド"
+  },
+  {
+    id: 9,
+    type: "study",
+    typeLabel: "📚 学問成就",
+    rank: "chukichi",
+    catchphrase: "スキマ時間の活用がカギ！効率アップで一歩リード！",
+    detail: "通学時間や寝る前の10分など、ちょっとしたスキマ時間を有効に使うことでライバルに大きく差をつけられる好調運です。単語帳や一問一答アプリを手元に置いておくと、驚くほどスムーズに知識が積み上がっていきます。",
+    sub1Title: "📖 勉強・試験",
+    sub1Val: "暗記科目・語学のスコアがグッと伸びやすい時期です。",
+    sub2Title: "💡 おすすめ行動",
+    sub2Val: "寝る直前に5分だけ今日学んだことを見返してみよう。",
+    luckyItem: "ミニ単語帳",
+    luckyColor: "ターコイズブルー"
+  },
+  {
+    id: 10,
+    type: "study",
+    typeLabel: "📚 学問成就",
+    rank: "chukichi",
+    catchphrase: "計画通りのペースで前進！安定した集中力で実力定着！",
+    detail: "気持ちに余裕を持って机に向かえる穏やかな好調期です。やるべきことの優先順位がはっきり見えるため、無駄なく効率的に課題を片付けられます。間違えた問題をノートにまとめておくと、試験直前の最強のお守りになります。",
+    sub1Title: "📖 勉強・試験",
+    sub1Val: "解き直しノートを作ることで同じミスを完全に防止！",
+    sub2Title: "💡 おすすめ行動",
+    sub2Val: "温かいお茶で一息入れてから次の単元へ進もう。",
+    luckyItem: "タイマー・砂時計",
+    luckyColor: "ライラック"
+  },
+  {
+    id: 11,
+    type: "study",
+    typeLabel: "📚 学問成就",
+    rank: "shokichi",
+    catchphrase: "まずは机周りの整理から！環境を整えて集中力アップ！",
+    detail: "大きなジャンプの前に、足元をしっかり固めることで運気が安定する小吉です。まずは机の上をスッキリ片付けて、今日やるべき課題を1つだけに絞ってみましょう。欲張らず目の前の1ページを丁寧に仕上げることで、確実に前へ進めます。",
+    sub1Title: "📖 勉強・試験",
+    sub1Val: "暗記カードやまとめノート作りが効果抜群です。",
+    sub2Title: "💡 おすすめ行動",
+    sub2Val: "スマホを別の部屋に置いて30分集中してみよう。",
+    luckyItem: "クリアファイル",
+    luckyColor: "ミントグリーン"
+  },
+  {
+    id: 12,
+    type: "study",
+    typeLabel: "📚 学問成就",
+    rank: "shokichi",
+    catchphrase: "小さな疑問をそのままにしないことで大きく成長！",
+    detail: "「まあいいか」と通り過ぎていた小さな疑問を丁寧に調べることで、思わぬ得点源や深い理解につながる運気です。スピードよりも正確さを意識して取り組むと、ケアレスミスが減って評価がグッと上がります。焦らず自分のペースを守って吉。",
+    sub1Title: "📖 勉強・試験",
+    sub1Val: "見直し時間を5分作るだけで結果が大きく変わります。",
+    sub2Title: "💡 おすすめ行動",
+    sub2Val: "辞書や参考書をじっくり読み込む時間を大切に。",
+    luckyItem: "蛍光マーカー",
+    luckyColor: "アイスブルー"
+  },
+  {
+    id: 13,
+    type: "study",
+    typeLabel: "📚 学問成就",
+    rank: "suekichi",
+    catchphrase: "今はじっくり根を張るとき！春に向けて大輪の花が咲く！",
+    detail: "今はまだ目に見える成果が少なく感じても、水面下では確実に実力が育っている「大器晩成」の末吉です。周りのスピードと比べて焦る必要はまったくありません。今日覚えた1つの単語、解いた1問が、本番のあなたを必ず助けてくれます。",
+    sub1Title: "📖 勉強・試験",
+    sub1Val: "無理な夜更かしは禁物。睡眠確保が成績アップの鍵。",
+    sub2Title: "💡 おすすめ行動",
+    sub2Val: "ハードルを下げて「毎日10分だけ」から継続を。",
+    luckyItem: "マグカップ",
+    luckyColor: "ハニーイエロー"
+  },
+  {
+    id: 14,
+    type: "study",
+    typeLabel: "📚 学問成就",
+    rank: "kyo",
+    catchphrase: "油断と夜更かしに注意！基本に立ち返ればピンチがチャンスに！",
+    detail: "「もう大丈夫」という思い込みや、徹夜での詰め込み勉強が空回りしやすいサインです。でも心配いりません！凶は「ここから上向くだけ」の転換点。難しい問題に手を出すより、教科書レベルの基本問題と十分な睡眠に切り替えることで運気が一気に好転します。",
+    sub1Title: "📖 勉強・試験",
+    sub1Val: "問題文の読み間違い・ケアレスミスを徹底警戒！",
+    sub2Title: "💡 おすすめ行動",
+    sub2Val: "今夜は早めに寝て、翌朝の頭が冴えた時間に復習を。",
+    luckyItem: "ホットタオル・アイマスク",
+    luckyColor: "ラベンダー"
+  },
+  {
+    id: 15,
+    type: "study",
+    typeLabel: "📚 学問成就",
+    rank: "kyo",
+    catchphrase: "あれこれ手を広げすぎ注意！1つに絞れば突破口が開く！",
+    detail: "いくつもの参考書や課題に同時に手をつけてしまい、どれも中途半端になりやすい注意報です。一度立ち止まって深呼吸し、「今日はこれだけ終わらせる！」と1つに絞りましょう。やることを減らすだけで驚くほど心が軽くなり、集中力が戻ってきます。",
+    sub1Title: "📖 勉強・試験",
+    sub1Val: "提出期限や持ち物の再確認を忘れずに行おう。",
+    sub2Title: "💡 おすすめ行動",
+    sub2Val: "ラムネで糖分補給してリフレッシュ！",
+    luckyItem: "ラムネ",
+    luckyColor: "スノーホワイト"
+  },
+
+  // ================= 16〜30：恋愛成就（大吉6・中吉4・小吉2・末吉1・凶2） =================
+  {
+    id: 16,
+    type: "love",
+    typeLabel: "💖 恋愛成就",
+    rank: "daikichi",
+    catchphrase: "イルミネーションの魔法がかかる！最高の恋の奇跡運！",
+    detail: "あなたの魅力がキラキラと輝き、恋の女神が全力で味方してくれる最高の大吉です！気になる人との距離が一気に縮まったり、想いが通じ合うようなドラマチックな出来事が起こる予感。素直な笑顔と「一緒にいると楽しい！」の一言が恋を成就させます。",
+    sub1Title: "💘 アプローチ",
+    sub1Val: "あなたからの連絡やお誘いが百発百中の大チャンス！",
+    sub2Title: "✨ 恋の舞台",
+    sub2Val: "夜景やイルミネーションスポットに最高の追い風あり。",
+    luckyItem: "きらきらリップ・小物",
+    luckyColor: "ローズゴールド"
+  },
+  {
+    id: 17,
+    type: "love",
+    typeLabel: "💖 恋愛成就",
+    rank: "daikichi",
+    catchphrase: "運命のシンクロが連発！心がぴたりと重なるハッピー運！",
+    detail: "偶然ばったり会ったり、同じタイミングで連絡が来たりと、嬉しいシンクロが次々と舞い込みます。自然体のあなたの優しさと明るさが、相手の心を強く惹きつけて離しません。片思い中の人もカップルも、一生忘れられない温かい冬の思い出が作れます。",
+    sub1Title: "💘 アプローチ",
+    sub1Val: "相手の素敵なところを言葉にして褒めると急接近！",
+    sub2Title: "✨ 恋の舞台",
+    sub2Val: "冬祭りの食べ歩きやイベント会場での会話が大吉。",
+    luckyItem: "屋台の食べ物",
+    luckyColor: "スイートピンク"
+  },
+  {
+    id: 18,
+    type: "love",
+    typeLabel: "💖 恋愛成就",
+    rank: "daikichi",
+    catchphrase: "素直な気持ちが愛を育てる！告白・進展のベストタイミング！",
+    detail: "迷いや照れを手放して一歩踏み出すことで、驚くほど温かい答えが返ってくる大幸運期です。友達以上恋人未満の関係から抜け出したい人にも絶好のチャンス到来！優しい気配りと明るいリアクションを心がけるだけで、あなたの好感度は最高潮に達します。",
+    sub1Title: "💘 アプローチ",
+    sub1Val: "ストレートで分かりやすい表現が相手の心に響きます。",
+    sub2Title: "✨ 恋の舞台",
+    sub2Val: "帰り道のちょっとした立ち話に恋のチャンスあり。",
+    luckyItem: "ふわふわのマフラー",
+    luckyColor: "ロイヤルゴールド"
+  },
+  {
+    id: 19,
+    type: "love",
+    typeLabel: "💖 恋愛成就",
+    rank: "daikichi",
+    catchphrase: "とびきりの笑顔が恋を呼ぶ！愛されオーラ全開の大吉運！",
+    detail: "周囲の空気をパッと明るくするあなたの笑顔に、熱い視線が集中するモテ期到来です！気になる相手からも「もっと話したい」「一緒にいたい」と思われているサインがいっぱい。遠慮せずに目を合わせて微笑むだけで、二人の関係は一気に特別なものへ進みます。",
+    sub1Title: "💘 アプローチ",
+    sub1Val: "アイコンタクトと明るい挨拶が恋のスイッチをON！",
+    sub2Title: "✨ 恋の舞台",
+    sub2Val: "写真スポットやライトアップされた並木道がラッキー。",
+    luckyItem: "星モチーフのアクセサリー",
+    luckyColor: "シャンパンピンク"
+  },
+  {
+    id: 20,
+    type: "love",
+    typeLabel: "💖 恋愛成就",
+    rank: "daikichi",
+    catchphrase: "心の距離が一気にゼロに！理想の展開が舞い込む奇跡運！",
+    detail: "「こうなったらいいな」と願っていたシチュエーションが現実になりやすいミラクルな大吉です！秘密の共有や二人だけの合言葉など、特別な絆が深まる出来事が待っています。カップルはさらに愛が深まり、片思いの人は両思いへの決定的な一歩を踏み出せます。",
+    sub1Title: "💘 アプローチ",
+    sub1Val: "「二人だけで話したいな」と少し甘えてみると大成功！",
+    sub2Title: "✨ 恋の舞台",
+    sub2Val: "温かい飲み物をシェアできるベンチや休憩スペース。",
+    luckyItem: "ハート型のスイーツ",
+    luckyColor: "ルビーレッド"
+  },
+  {
+    id: 21,
+    type: "love",
+    typeLabel: "💖 恋愛成就",
+    rank: "daikichi",
+    catchphrase: "ときめきの予感が現実へ！新しい恋も今の恋も最高潮！",
+    detail: "恋の追い風がビュンビュン吹いている絶好調の運気です。新しい出会いを求めている人には理想にぴったりの素敵なご縁が、すでに好きな人がいる人には相手からの嬉しいアプローチが期待できます。オシャレをしてお出かけするとさらに幸運が倍増します！",
+    sub1Title: "💘 アプローチ",
+    sub1Val: "「今度一緒に行こうよ！」と次の約束を取り付けて吉。",
+    sub2Title: "✨ 恋の舞台",
+    sub2Val: "音楽が流れる場所や賑やかなイベント会場。",
+    luckyItem: "お気に入りの香水・ミスト",
+    luckyColor: "オーロラピンク"
+  },
+  {
+    id: 22,
+    type: "love",
+    typeLabel: "💖 恋愛成就",
+    rank: "chukichi",
+    catchphrase: "会話が弾んで笑顔が絶えない！ぽかぽか親密アップ運！",
+    detail: "共通の趣味や好きな食べ物など、楽しい話題から自然と心の距離が縮まっていく好調運です。カッコつけたり背伸びをしたりするよりも、無邪気に笑うあなたの姿が一番の魅力になります。メッセージは少しテンポ良く返すとさらに盛り上がります。",
+    sub1Title: "💘 アプローチ",
+    sub1Val: "「〇〇って知ってる？」と共通の話題を振ってみよう。",
+    sub2Title: "✨ 恋の舞台",
+    sub2Val: "落ち着いたカフェや温かいドリンクが飲める場所。",
+    luckyItem: "ペアデザインの雑貨",
+    luckyColor: "チェリーブロッサム"
+  },
+  {
+    id: 23,
+    type: "love",
+    typeLabel: "💖 恋愛成就",
+    rank: "chukichi",
+    catchphrase: "さりげない優しさが相手の心を射抜くスイート運！",
+    detail: "「寒くない？」「お疲れさま」といったあなたの温かい一言が、相手の心に深く残るときです。見返りを求めない優しさが、やがて大きな愛情となってあなたに返ってきます。聞き上手になって相手の話を楽しく聴くことで、信頼と好意がグッと深まります。",
+    sub1Title: "💘 アプローチ",
+    sub1Val: "相手が喜ぶ小さな気配りが恋の決め手になります。",
+    sub2Title: "✨ 恋の舞台",
+    sub2Val: "友達を交えたグループでの楽しいお出かけが吉。",
+    luckyItem: "ハンドクリーム",
+    luckyColor: "パステルパープル"
+  },
+  {
+    id: 24,
+    type: "love",
+    typeLabel: "💖 恋愛成就",
+    rank: "chukichi",
+    catchphrase: "素直なリアクションが好感度抜群！急接近のチャンス！",
+    detail: "相手の冗談に思いきり笑ったり、プレゼントや気遣いに「すごく嬉しい！」と全力で喜んだりすることで、相手の心をグッと掴める好調期です。あなたの素直な反応を見るのが楽しくて、相手からどんどん話しかけてくれるようになります。",
+    sub1Title: "💘 アプローチ",
+    sub1Val: "「ありがとう！」をいつもより少し大きめの笑顔で伝えよう。",
+    sub2Title: "✨ 恋の舞台",
+    sub2Val: "一緒に写真を撮ったりゲームを楽しんだりする時間。",
+    luckyItem: "ストラップ・キーホルダー",
+    luckyColor: "コーラルピンク"
+  },
+  {
+    id: 25,
+    type: "love",
+    typeLabel: "💖 恋愛成就",
+    rank: "chukichi",
+    catchphrase: "安心感と居心地の良さで「特別な存在」へランクアップ！",
+    detail: "一緒にいるとホッとする、そんなあなたの温かい雰囲気が恋を前進させる鍵になります。無理に話題を探さなくても、隣でニコニコしているだけで心地よい時間が流れます。連絡の最後に「おやすみ」「また明日ね」と添えると距離が縮まります。",
+    sub1Title: "💘 アプローチ",
+    sub1Val: "相手の話を否定せず「わかるよ」と共感してあげて。",
+    sub2Title: "✨ 恋の舞台",
+    sub2Val: "夕暮れから夜にかけてのイルミネーション散歩。",
+    luckyItem: "温かいミルクティー",
+    luckyColor: "ミルキーホワイト"
+  },
+  {
+    id: 26,
+    type: "love",
+    typeLabel: "💖 恋愛成就",
+    rank: "shokichi",
+    catchphrase: "まずは友達としての信頼から！焦らず育てるナチュラル運！",
+    detail: "急展開を狙うよりも、毎日の挨拶やちょっとした雑談を積み重ねることで確実に距離が縮まる小吉です。笑顔で挨拶を交わす回数を増やすだけでも、相手の中であなたの存在感がどんどん大きくなっていきます。焦らず心地よいペースを大切にしましょう。",
+    sub1Title: "💘 アプローチ",
+    sub1Val: "まずは「話しやすい人」になることが恋の第一歩！",
+    sub2Title: "✨ 恋の舞台",
+    sub2Val: "日常の何気ない挨拶や短いメッセージのやり取り。",
+    luckyItem: "キャンディ・グミ",
+    luckyColor: "アクアマリン"
+  },
+  {
+    id: 27,
+    type: "love",
+    typeLabel: "💖 恋愛成就",
+    rank: "shokichi",
+    catchphrase: "自分磨きを楽しむことで素敵なご縁が引き寄せられる！",
+    detail: "恋の行方を気にしすぎるよりも、ヘアスタイルを整えたり新しい服を選んだりして「自分がご機嫌になること」を楽しむと運気が上向きます。あなたがキラキラ輝いて毎日を楽しんでいる姿に、自然と素敵な視線が集まってきます。",
+    sub1Title: "💘 アプローチ",
+    sub1Val: "追いかけすぎず、余裕のある笑顔を見せると効果的。",
+    sub2Title: "✨ 恋の舞台",
+    sub2Val: "ショッピングや美容室など自分を磨けるスポット。",
+    luckyItem: "手鏡・ヘアブラシ",
+    luckyColor: "パールホワイト"
+  },
+  {
+    id: 28,
+    type: "love",
+    typeLabel: "💖 恋愛成就",
+    rank: "suekichi",
+    catchphrase: "ゆっくり時間をかけて本物の愛に育つスロースタート運！",
+    detail: "今はまだ大きな動きが見えなくても、あなたの優しさや魅力はしっかり相手に届いている末吉です。冬の間にじっくり信頼を温めておくことで、季節が変わる頃に思いがけない嬉しい展開が訪れます。今は焦らず、相手を知る時間を楽しみましょう。",
+    sub1Title: "💘 アプローチ",
+    sub1Val: "相手のペースを尊重して、のんびり構えて大丈夫。",
+    sub2Title: "✨ 恋の舞台",
+    sub2Val: "共通の友達からの情報やサポートに幸運の鍵あり。",
+    luckyItem: "ハーブティー",
+    luckyColor: "ペールブルー"
+  },
+  {
+    id: 29,
+    type: "love",
+    typeLabel: "💖 恋愛成就",
+    rank: "kyo",
+    catchphrase: "言葉足らずと早とちりに注意！丁寧なやり取りで恋を守ろう！",
+    detail: "返信が少し遅れただけで不安になったり、短いメッセージが冷たく伝わったりしやすい注意報です。でも大丈夫！凶を引いた今こそ「一呼吸おいて丁寧に伝える」を意識すれば、すれ違いを100%防げます。可愛いスタンプや「ありがとう」を添えるだけで関係は一気に温まります。",
+    sub1Title: "💘 アプローチ",
+    sub1Val: "感情的な長文や駆け引きはNG。シンプルに笑顔で！",
+    sub2Title: "✨ 恋の舞台",
+    sub2Val: "今日は無理に動かず、自分の好きな趣味でリラックス。",
+    luckyItem: "可愛い付箋・メモ",
+    luckyColor: "レモンイエロー"
+  },
+  {
+    id: 30,
+    type: "love",
+    typeLabel: "💖 恋愛成就",
+    rank: "kyo",
+    catchphrase: "過去のモヤモヤを手放すデトックス期！新しい恋の風が入る！",
+    detail: "昔の失敗や「どうせ私なんて」というネガティブな思い込みが恋のブレーキになりやすいとき。この凶は「古い悩みをリセットして新しく生まれ変わるサイン」です！まずは自分自身をたっぷり甘やかして笑顔を取り戻せば、想像以上に素敵なご縁が舞い込みます。",
+    sub1Title: "💘 アプローチ",
+    sub1Val: "焦って結論を出さず、まずは心を整えることを優先に。",
+    sub2Title: "✨ 恋の舞台",
+    sub2Val: "温かいお風呂やアロマで心身を癒やすおうち時間。",
+    luckyItem: "入浴剤・バスボム",
+    luckyColor: "ラベンダー"
+  },
+
+  // ================= 31〜45：勝利祈願（大吉6・中吉4・小吉2・末吉1・凶2） =================
+  {
+    id: 31,
+    type: "victory",
+    typeLabel: "🏆 勝利祈願",
+    rank: "daikichi",
+    catchphrase: "完全勝利の黄金オーラ！ここ一番で圧倒的パワーを発揮！",
+    detail: "勝負運が最高潮に達し、ここ一番の場面で神がかり的な集中力と勝負強さを発揮できる大吉です！スポーツの試合、コンテスト、オーディション、ゲームや抽選など、あなたが「勝ちたい！」と願う舞台で主役級の輝きを放ちます。自信を持って堂々と挑みましょう！",
+    sub1Title: "🔥 勝負の鍵",
+    sub1Val: "先手必勝！スタートから積極的に攻めて主導権を握ろう。",
+    sub2Title: "⚡ パワー源",
+    sub2Val: "「絶対に勝てる！」と声に出して気合を入れると無敵に。",
+    luckyItem: "金色のアクセサリー・小物",
+    luckyColor: "ビクトリーゴールド"
+  },
+  {
+    id: 32,
+    type: "victory",
+    typeLabel: "🏆 勝利祈願",
+    rank: "daikichi",
+    catchphrase: "逆境すら力に変える！栄光のゴールへ一直線の大躍進運！",
+    detail: "これまでの練習や準備が100%以上の実力となって爆発する大勝利運です！たとえ接戦やピンチの場面が訪れても、最後の最後に劇的な逆転劇を起こせる強い運気に守られています。仲間との声掛けやチームワークが勝利をさらに確実なものにします。",
+    sub1Title: "🔥 勝負の鍵",
+    sub1Val: "後半戦・終盤の粘り強さでライバルに圧倒的な差をつけます。",
+    sub2Title: "⚡ パワー源",
+    sub2Val: "仲間とのハイタッチや熱い応援がパワーを倍増！",
+    luckyItem: "お気に入りのタオル",
+    luckyColor: "サンシャインオレンジ"
+  },
+  {
+    id: 33,
+    type: "victory",
+    typeLabel: "🏆 勝利祈願",
+    rank: "daikichi",
+    catchphrase: "直感と決断力が冴えわたる！チャンスを逃さず一撃必勝！",
+    detail: "「今だ！」という勝負どころを完璧に見極め、迷いのない決断で勝利を掴み取れる大吉です。あなたの大胆なチャレンジが周囲を驚かせ、最高の結果と称賛を引き寄せます。恐れずに自分の得意技・得意パターンで真っ向勝負を挑んで大正解です！",
+    sub1Title: "🔥 勝負の鍵",
+    sub1Val: "自分の得意パターンに持ち込めば勝利は目前！",
+    sub2Title: "⚡ パワー源",
+    sub2Val: "試合や本番前のアップテンポな音楽が集中力を高めます。",
+    luckyItem: "イヤホン・ヘッドホン",
+    luckyColor: "コバルトブルー"
+  },
+  {
+    id: 34,
+    type: "victory",
+    typeLabel: "🏆 勝利祈願",
+    rank: "daikichi",
+    catchphrase: "強運が味方する無双モード！くじ運・勝負運ともに最高点！",
+    detail: "実力はもちろんのこと、運の良さまであなたの味方につく最強の大吉運です！接戦の判定や抽選、じゃんけんにいたるまで、不思議と勝利の女神があなたに微笑みます。迷ったときは最初にピンときた方を選ぶことで、最高の栄冠を手に入れられます。",
+    sub1Title: "🔥 勝負の鍵",
+    sub1Val: "迷わず第一印象・直感を信じて行動すると大当たり！",
+    sub2Title: "⚡ パワー源",
+    sub2Val: "背筋をピンと伸ばして堂々と入場・スタートすること。",
+    luckyItem: "星型のキーホルダー",
+    luckyColor: "プラチナゴールド"
+  },
+  {
+    id: 35,
+    type: "victory",
+    typeLabel: "🏆 勝利祈願",
+    rank: "daikichi",
+    catchphrase: "限界突破のスーパープレー！自己ベスト更新の大勝利運！",
+    detail: "体も心も驚くほど軽やかに動き、自分でも信じられないようなスーパープレーや最高記録が飛び出す大吉です！プレッシャーさえも心地よいエネルギーに変わり、本番の舞台を思いきり楽しめます。栄光のトロフィーはすぐ目の前に輝いています！",
+    sub1Title: "🔥 勝負の鍵",
+    sub1Val: "思い切りの良いチャレンジが最高の流れを呼び込みます。",
+    sub2Title: "⚡ パワー源",
+    sub2Val: "大好きなメニューをしっかり食べてエネルギー満タンに！",
+    luckyItem: "お気に入りのスニーカー",
+    luckyColor: "クリムゾンレッド"
+  },
+  {
+    id: 36,
+    type: "victory",
+    typeLabel: "🏆 勝利祈願",
+    rank: "daikichi",
+    catchphrase: "王者の風格で堂々勝利！ライバルを圧倒する輝き運！",
+    detail: "周囲の空気を一瞬で自分のペースに引き込む圧倒的な存在感と勝負強さが光る大吉です。どんな強敵が相手でも怯まず立ち向かうことで、勝利の道が大きく開けます。仲間を鼓舞する明るい一言が、チーム全体の士気を最高潮に高めます。",
+    sub1Title: "🔥 勝負の鍵",
+    sub1Val: "ポジティブな声出しと堂々とした態度が勝利を決定づけます。",
+    sub2Title: "⚡ パワー源",
+    sub2Val: "深呼吸して「自分ならできる」と笑顔でうなずこう。",
+    luckyItem: "リストバンド",
+    luckyColor: "ロイヤルパープル"
+  },
+  {
+    id: 37,
+    type: "victory",
+    typeLabel: "🏆 勝利祈願",
+    rank: "chukichi",
+    catchphrase: "冷静な作戦とチームワークで着実に勝ち進む堅実勝利運！",
+    detail: "勢いだけでなく、冷静に状況を見極めてベストな選択ができる好調運です。相手の動きやルールをしっかり分析し、堅実にポイントを積み重ねることで安定した勝利を収められます。周りの仲間と役割分担を明確にするとさらに強くなります。",
+    sub1Title: "🔥 勝負の鍵",
+    sub1Val: "焦らずいつものフォーム・いつものペースを守ることが大切。",
+    sub2Title: "⚡ パワー源",
+    sub2Val: "事前のシミュレーションと入念なウォーミングアップ。",
+    luckyItem: "腕時計・ストップウォッチ",
+    luckyColor: "エレクトリックパープル"
+  },
+  {
+    id: 38,
+    type: "victory",
+    typeLabel: "🏆 勝利祈願",
+    rank: "chukichi",
+    catchphrase: "笑顔と楽しむ心がプレッシャーを跳ね返す好調ファイト運！",
+    detail: "「失敗したらどうしよう」という緊張よりも、「本番ワクワクする！」と楽しむ気持ちを持つことで実力が一気に開花する運気です。あなたが笑顔で堂々としているだけで、相手はプレッシャーを感じてペースを乱します。楽しむ者が最後に勝ちます！",
+    sub1Title: "🔥 勝負の鍵",
+    sub1Val: "ピンチのときほど口角を上げて深呼吸すると流れが変わる！",
+    sub2Title: "⚡ パワー源",
+    sub2Val: "温かいスープやお茶で体を芯から温めておこう。",
+    luckyItem: "カイロ",
+    luckyColor: "アプリコットオレンジ"
+  },
+  {
+    id: 39,
+    type: "victory",
+    typeLabel: "🏆 勝利祈願",
+    rank: "chukichi",
+    catchphrase: "リズムに乗れば止まらない！テンポの良さで勝ち抜く上昇運！",
+    detail: "最初の1ポイントや序盤の小さな成功をきっかけに、どんどん調子が上がっていく好調運です。細かいミスを引きずらず、すぐに次のプレーや次の問題へ気持ちを切り替えることで、理想的な勝ちパターンに持ち込めます。",
+    sub1Title: "🔥 勝負の鍵",
+    sub1Val: "切り替えの早さが勝利への最短ルートになります。",
+    sub2Title: "⚡ パワー源",
+    sub2Val: "手首や肩を軽く回してリラックスした状態をキープ。",
+    luckyItem: "ミサンガ・ヘアゴム",
+    luckyColor: "アクアブルー"
+  },
+  {
+    id: 40,
+    type: "victory",
+    typeLabel: "🏆 勝利祈願",
+    rank: "chukichi",
+    catchphrase: "丁寧なプレーと観察眼が光る！相手の隙を突くスマート勝利運！",
+    detail: "力任せではなく、状況をよく観察して的確な一手を選べるクレバーな好調運です。相手が焦っているときほどあなたは落ち着いて対処でき、気づけば有利な展開を築けています。準備運動と道具のチェックを万全にするとさらに盤石です。",
+    sub1Title: "🔥 勝負の鍵",
+    sub1Val: "相手の動きをよく見て、落ち着いてカウンターを狙おう。",
+    sub2Title: "⚡ パワー源",
+    sub2Val: "こまめな水分補給で集中力を最後まで維持しよう。",
+    luckyItem: "ハンドタオル",
+    luckyColor: "ライムグリーン"
+  },
+  {
+    id: 41,
+    type: "victory",
+    typeLabel: "🏆 勝利祈願",
+    rank: "shokichi",
+    catchphrase: "まずは自分に勝つ！丁寧な準備とルーティンが勝利を呼ぶ！",
+    detail: "ライバルを意識しすぎるよりも、自分のベストパフォーマンスを出すことに集中すると良い結果につながる小吉です。道具の手入れや靴ひもを結び直すなど、いつものルーティンを丁寧に行うことで心が落ち着き、安定した力を発揮できます。",
+    sub1Title: "🔥 勝負の鍵",
+    sub1Val: "基本動作・基礎プレーを大切にするとミスが激減！",
+    sub2Title: "⚡ パワー源",
+    sub2Val: "お気に入りのドリンクで水分・エネルギー補給を。",
+    luckyItem: "スポーツドリンク・水筒",
+    luckyColor: "スカイブルー"
+  },
+  {
+    id: 42,
+    type: "victory",
+    typeLabel: "🏆 勝利祈願",
+    rank: "shokichi",
+    catchphrase: "小さなチャンスをコツコツ拾って勝利へつなげる粘り運！",
+    detail: "一発逆転の大技よりも、地道なディフェンスや小さなポイントの積み重ねが最後に効いてくる運気です。派手さはなくても、諦めずに食らいつくあなたの姿勢が流れを引き寄せます。最後まで集中力を切らさず粘り抜けば吉！",
+    sub1Title: "🔥 勝負の鍵",
+    sub1Val: "守りを固めて相手のミスを待つ作戦が効果的です。",
+    sub2Title: "⚡ パワー源",
+    sub2Val: "軽めのストレッチで体と心をほぐしておこう。",
+    luckyItem: "リストバンド・手袋",
+    luckyColor: "ミントブルー"
+  },
+  {
+    id: 43,
+    type: "victory",
+    typeLabel: "🏆 勝利祈願",
+    rank: "suekichi",
+    catchphrase: "今は力を蓄える充電期間！本番の舞台で一気に花開く！",
+    detail: "今はまだ調整段階ですが、本番に向けて着実に牙を研いでいる末吉です。今日の悔しさや課題は、すべて次の大勝利のための大切なデータになります。焦らず弱点を1つずつ補強していくことで、いざという大舞台で驚くほどの強さを発揮します。",
+    sub1Title: "🔥 勝負の鍵",
+    sub1Val: "過去の成功体験を思い出して自信をチャージしよう。",
+    sub2Title: "⚡ パワー源",
+    sub2Val: "栄養たっぷりの食事と十分な休息がパワーの源。",
+    luckyItem: "もこもこ靴下",
+    luckyColor: "クリームイエロー"
+  },
+  {
+    id: 44,
+    type: "victory",
+    typeLabel: "🏆 勝利祈願",
+    rank: "kyo",
+    catchphrase: "力みすぎ・焦りすぎ注意！肩の力を抜けば本来の強さが戻る！",
+    detail: "「絶対に勝たなきゃ！」と気負いすぎて体が硬くなり、空回りしやすい注意報です。でも大丈夫！凶は「力を抜いた瞬間に流れが変わる」サイン。深呼吸して肩の力をストンと落とし、基本に忠実にプレーすれば、本来の実力が蘇って逆転の芽が生まれます。",
+    sub1Title: "🔥 勝負の鍵",
+    sub1Val: "無理な大技は封印し、確実な選択を心がけよう。",
+    sub2Title: "⚡ パワー源",
+    sub2Val: "本番前に大きく3回深呼吸してリズムを整えて！",
+    luckyItem: "温かいお茶",
+    luckyColor: "フレッシュグリーン"
+  },
+  {
+    id: 45,
+    type: "victory",
+    typeLabel: "🏆 勝利祈願",
+    rank: "kyo",
+    catchphrase: "油断と準備不足に警戒！事前チェックを徹底すれば大難を逃れる！",
+    detail: "「いつも通りで大丈夫」という油断や、忘れ物・確認不足からペースを崩しやすいサインです。この凶を引いたあなたは超ラッキー！事前にルール・時間・持ち物をしっかり確認し、いつもより10分早めに行動するだけでトラブルを完全に防ぎ、実力を出し切れます。",
+    sub1Title: "🔥 勝負の鍵",
+    sub1Val: "持ち物・時間・ルールの事前確認を完璧にしよう！",
+    sub2Title: "⚡ パワー源",
+    sub2Val: "甘いおやつで脳をリフレッシュして冷静さをキープ。",
+    luckyItem: "キャンディ・ラムネ",
+    luckyColor: "スノーホワイト"
+  }
+];
+
+const TYPE_ICONS = {
+  study: "📚",
+  love: "💖",
+  victory: "🏆"
+};
+
+/**
+ * イルミネーション背景生成（青・紫・金）
+ */
+function initIllumination() {
+  const layer = document.getElementById("illuminationLayer");
+  const garland = document.getElementById("garland");
+
+  const bulbCount = Math.max(12, Math.floor(window.innerWidth / 34));
+  for (let i = 0; i < bulbCount; i++) {
+    const bulb = document.createElement("div");
+    bulb.className = "bulb";
+    garland.appendChild(bulb);
+  }
+
+  const palette = [
+    { bg: "radial-gradient(circle, #ffd700 0%, rgba(255,215,0,0) 70%)", shadow: "0 0 18px #ffd700" },
+    { bg: "radial-gradient(circle, #fff099 0%, rgba(255,240,153,0) 70%)", shadow: "0 0 14px #ffe066" },
+    { bg: "radial-gradient(circle, #60a5fa 0%, rgba(96,165,250,0) 70%)", shadow: "0 0 18px #3b82f6" },
+    { bg: "radial-gradient(circle, #38bdf8 0%, rgba(56,189,248,0) 70%)", shadow: "0 0 16px #0284c7" },
+    { bg: "radial-gradient(circle, #c084fc 0%, rgba(192,132,252,0) 70%)", shadow: "0 0 18px #9333ea" },
+    { bg: "radial-gradient(circle, #e879f9 0%, rgba(232,121,249,0) 70%)", shadow: "0 0 16px #c026d3" }
+  ];
+
+  const particleCount = 38;
+  for (let i = 0; i < particleCount; i++) {
+    const dot = document.createElement("div");
+    dot.className = "bokeh";
+    const size = Math.floor(Math.random() * 24) + 10;
+    const color = palette[i % palette.length];
+    dot.style.width = `${size}px`;
+    dot.style.height = `${size}px`;
+    dot.style.left = `${Math.random() * 100}%`;
+    dot.style.top = `${Math.random() * 100}%`;
+    dot.style.background = color.bg;
+    dot.style.boxShadow = color.shadow;
+    dot.style.setProperty("--dur", `${(Math.random() * 4 + 4.5).toFixed(1)}s`);
+    dot.style.setProperty("--delay", `${(Math.random() * 5).toFixed(1)}s`);
+    dot.style.setProperty("--max-op", (Math.random() * 0.45 + 0.45).toFixed(2));
+    layer.appendChild(dot);
+  }
+}
+
+/**
+ * URLパラメータからQR固定ID（1〜45）を取得
+ */
+function getFixedIdFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  let raw = params.get("id") || params.get("qr") || params.get("no");
+
+  if (!raw && window.location.hash) {
+    raw = window.location.hash.replace("#", "");
+  }
+
+  const num = parseInt(raw, 10);
+  if (!isNaN(num) && num >= 1 && num <= 45) {
+    return num;
+  }
+  return 1;
+}
+
+/**
+ * 初期画面（ボタン表示）と結果データの事前セット
+ */
+function setupOmikuji(id) {
+  const item = OMIKUJI_DATA.find(d => d.id === id) || OMIKUJI_DATA[0];
+  const rankInfo = RANKS[item.rank];
+  const qrText = `QR No.${String(item.id).padStart(2, "0")} / 45`;
+
+  // 初期画面（「結果をみる」ボタン画面）の表示セット
+  const introTypeBadge = document.getElementById("introTypeBadge");
+  introTypeBadge.textContent = item.typeLabel;
+  introTypeBadge.className = "type-pill type-" + item.type;
+  document.getElementById("introQrLabel").textContent = qrText;
+  document.getElementById("introIcon").textContent = TYPE_ICONS[item.type] || "🔮";
+
+  // 結果カードの中身を事前に構築（ボタンを押した瞬間に遅延ゼロで表示するため）
+  const typeBadge = document.getElementById("typeBadge");
+  typeBadge.textContent = item.typeLabel;
+  typeBadge.className = "type-pill type-" + item.type;
+  document.getElementById("qrCodeLabel").textContent = qrText;
+
+  const rankBox = document.getElementById("rankBox");
+  rankBox.className = "rank-box " + rankInfo.className;
+  document.getElementById("rankStars").textContent = rankInfo.stars;
+  document.getElementById("rankName").textContent = rankInfo.name;
+  document.getElementById("rankCatch").textContent = item.catchphrase;
+
+  document.getElementById("detailText").textContent = item.detail;
+  document.getElementById("sub1Title").textContent = item.sub1Title;
+  document.getElementById("sub1Val").textContent = item.sub1Val;
+  document.getElementById("sub2Title").textContent = item.sub2Title;
+  document.getElementById("sub2Val").textContent = item.sub2Val;
+
+  document.getElementById("luckyItem").textContent = item.luckyItem;
+  document.getElementById("luckyColor").textContent = item.luckyColor;
+
+  // 「結果をみる」ボタン押下で瞬時に結果を表示
+  const introScreen = document.getElementById("introScreen");
+  const resultCard = document.getElementById("resultCard");
+  const revealBtn = document.getElementById("revealBtn");
+
+  revealBtn.addEventListener("click", () => {
+    introScreen.classList.add("hidden");
+    resultCard.classList.remove("hidden");
+    resultCard.classList.add("result-appear");
+  });
+}
+
+/**
+ * 運営・GitHub公開用の全45枚一覧＆URL一括コピー機能
+ */
+function buildDirectory(currentId) {
+  const container = document.getElementById("dirListContainer");
+  const groups = [
+    { title: "📚 学問成就（No.01〜15｜大吉6・中吉4・小吉2・末吉1・凶2）", items: OMIKUJI_DATA.slice(0, 15) },
+    { title: "💖 恋愛成就（No.16〜30｜大吉6・中吉4・小吉2・末吉1・凶2）", items: OMIKUJI_DATA.slice(15, 30) },
+    { title: "🏆 勝利祈願（No.31〜45｜大吉6・中吉4・小吉2・末吉1・凶2）", items: OMIKUJI_DATA.slice(30, 45) }
+  ];
+
+  groups.forEach(group => {
+    const h = document.createElement("div");
+    h.className = "dir-group-title";
+    h.textContent = group.title;
+    container.appendChild(h);
+
+    const grid = document.createElement("div");
+    grid.className = "dir-grid";
+
+    group.items.forEach(item => {
+      const a = document.createElement("a");
+      a.href = `?id=${item.id}`;
+      a.className = "dir-link" + (item.id === currentId ? " active" : "");
+      a.innerHTML = `<span>No.${String(item.id).padStart(2, "0")}</span><span class="dir-rank-tag">${RANKS[item.rank].name}</span>`;
+      grid.appendChild(a);
+    });
+
+    container.appendChild(grid);
+  });
+
+  const btn = document.getElementById("toggleDirBtn");
+  const dir = document.getElementById("qrDirectory");
+  btn.addEventListener("click", () => {
+    dir.classList.toggle("open");
+    btn.textContent = dir.classList.contains("open")
+      ? "🔼 一覧を閉じる"
+      : "📋 運営・GitHub公開用：全45枚のQR結果＆URL一覧";
+  });
+
+  const copyBtn = document.getElementById("copyAllUrlsBtn");
+  const copyStatus = document.getElementById("copyStatus");
+  copyBtn.addEventListener("click", async () => {
+    const baseUrl = window.location.origin + window.location.pathname;
+    const lines = OMIKUJI_DATA.map(item => {
+      const no = String(item.id).padStart(2, "0");
+      return `No.${no}	${item.typeLabel}	${RANKS[item.rank].name}	${baseUrl}?id=${item.id}`;
+    });
+    const text = lines.join("\n");
+    try {
+      await navigator.clipboard.writeText(text);
+      copyStatus.textContent = "✅ 全45件のQR作成用URLリストをクリップボードにコピーしました！";
+    } catch (e) {
+      copyStatus.textContent = "⚠️ コピーに失敗しました。ブラウザの権限をご確認ください。";
+    }
+  });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  initIllumination();
+  const currentId = getFixedIdFromUrl();
+  setupOmikuji(currentId);
+  buildDirectory(currentId);
+});
+</script>
+</body>
+</html>
