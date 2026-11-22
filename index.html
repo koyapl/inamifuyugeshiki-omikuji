@@ -578,7 +578,7 @@
     <section class="omikuji-card intro-card" id="introScreen">
       <div class="intro-meta">
         <span class="type-pill" id="introTypeBadge">📚 学問成就</span>
-       
+        <span class="qr-id-badge" id="introQrLabel">QR No.01 / 45</span>
       </div>
       <div class="intro-icon-wrap" id="introIcon">🔮</div>
       <h2 class="intro-heading">おみくじが届きました！</h2>
@@ -628,7 +628,21 @@
       </div>
     </main>
 
-    
+    <!-- 運営・GitHub公開用：全45種のQRリンク確認＆URL一括コピーパネル -->
+    <div class="directory-toggle">
+      <button class="toggle-btn" id="toggleDirBtn" type="button">📋 運営・GitHub公開用：全45枚のQR結果＆URL一覧</button>
+    </div>
+
+    <section class="qr-directory" id="qrDirectory">
+      <p class="dir-desc">
+        GitHub Pagesで公開後、現在のページURLの末尾に <code>?id=1</code> 〜 <code>?id=45</code> を付けた45個のURLをQRコード化してください。読み込んだ瞬間に「結果をみる」ボタンが表示され、押すと該当番号の固定結果が瞬時に表示されます。
+      </p>
+      <div class="copy-urls-box">
+        <button class="copy-btn" id="copyAllUrlsBtn" type="button">📎 現在の公開URLから全45枚分のQR用URLを一括コピー</button>
+        <div class="copy-status" id="copyStatus"></div>
+      </div>
+      <div id="dirListContainer"></div>
+    </section>
   </div>
 
 <script>
@@ -1402,6 +1416,63 @@ function setupOmikuji(id) {
   });
 }
 
+/**
+ * 運営・GitHub公開用の全45枚一覧＆URL一括コピー機能
+ */
+function buildDirectory(currentId) {
+  const container = document.getElementById("dirListContainer");
+  const groups = [
+    { title: "📚 学問成就（No.01〜15｜大吉6・中吉4・小吉2・末吉1・凶2）", items: OMIKUJI_DATA.slice(0, 15) },
+    { title: "💖 恋愛成就（No.16〜30｜大吉6・中吉4・小吉2・末吉1・凶2）", items: OMIKUJI_DATA.slice(15, 30) },
+    { title: "🏆 勝利祈願（No.31〜45｜大吉6・中吉4・小吉2・末吉1・凶2）", items: OMIKUJI_DATA.slice(30, 45) }
+  ];
+
+  groups.forEach(group => {
+    const h = document.createElement("div");
+    h.className = "dir-group-title";
+    h.textContent = group.title;
+    container.appendChild(h);
+
+    const grid = document.createElement("div");
+    grid.className = "dir-grid";
+
+    group.items.forEach(item => {
+      const a = document.createElement("a");
+      a.href = `?id=${item.id}`;
+      a.className = "dir-link" + (item.id === currentId ? " active" : "");
+      a.innerHTML = `<span>No.${String(item.id).padStart(2, "0")}</span><span class="dir-rank-tag">${RANKS[item.rank].name}</span>`;
+      grid.appendChild(a);
+    });
+
+    container.appendChild(grid);
+  });
+
+  const btn = document.getElementById("toggleDirBtn");
+  const dir = document.getElementById("qrDirectory");
+  btn.addEventListener("click", () => {
+    dir.classList.toggle("open");
+    btn.textContent = dir.classList.contains("open")
+      ? "🔼 一覧を閉じる"
+      : "📋 運営・GitHub公開用：全45枚のQR結果＆URL一覧";
+  });
+
+  const copyBtn = document.getElementById("copyAllUrlsBtn");
+  const copyStatus = document.getElementById("copyStatus");
+  copyBtn.addEventListener("click", async () => {
+    const baseUrl = window.location.origin + window.location.pathname;
+    const lines = OMIKUJI_DATA.map(item => {
+      const no = String(item.id).padStart(2, "0");
+      return `No.${no}	${item.typeLabel}	${RANKS[item.rank].name}	${baseUrl}?id=${item.id}`;
+    });
+    const text = lines.join("\n");
+    try {
+      await navigator.clipboard.writeText(text);
+      copyStatus.textContent = "✅ 全45件のQR作成用URLリストをクリップボードにコピーしました！";
+    } catch (e) {
+      copyStatus.textContent = "⚠️ コピーに失敗しました。ブラウザの権限をご確認ください。";
+    }
+  });
+}
 
 document.addEventListener("DOMContentLoaded", () => {
   initIllumination();
